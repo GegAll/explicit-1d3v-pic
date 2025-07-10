@@ -18,19 +18,20 @@ Each test is driven by a dedicated `main_<test>.py` script and shares a common c
 
 ---
 
-## Repository Structure
+```text
+.
 ├── README.md
 ├── params.py
 ├── grid.py
 ├── particles.py
 ├── field_solver.py
 ├── diagnostics.py
-│
 ├── main_vacuum_propagation.py
 ├── main_cyclotron.py
 ├── main_langmuir.py
 ├── main_two_stream_instability.py
 └── main_weibel_instability.py
+```
 
 
 ---
