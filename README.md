@@ -84,6 +84,66 @@ Each `main_<test>.py` script follows this pattern:
 
 ---
 
+## Script Descriptions
+
+### main.py  
+A **general-purpose 1D 3V PIC driver** that unifies all built-in test problems and a custom IC mode.  
+- **Test selection**: Use `--ic` flag to choose between `vacuum`, `cyclotron`, `langmuir`, `two_stream`, `weibel`, or `custom`.  
+- **Common arguments**: grid size (`--Nx`, `--L`), time stepping (`--CFL`, `--nsteps`), particle settings (`--npp`, `--q`, `--m`), output directory (`--outdir`), and more.  
+- **Workflow**:  
+  1. Parse arguments, write `params.txt`.  
+  2. Initialize `Grid1D` + `Particles`.  
+  3. Apply IC (field or particle seeding).  
+  4. Advance fields & particles in a single loop.  
+  5. Collect diagnostics, save CSV, generate plots.  
+
+### main_vacuum_propagation.py  
+Simulates **electromagnetic pulse propagation in vacuum** using the Yee FDTD scheme (no charges).  
+- **Initial condition**: Sinusoidal `Ez` pulse seeded via `initialize_pulse()`.  
+- **Diagnostics**:  
+  - Track electric (`EE`) and magnetic (`ME`) field energies.  
+  - Plot total vs. individual energies to verify energy conservation.  
+
+### main_cyclotron.py  
+Tracks **single-electron gyration** in uniform `B0` (and optional `E0`) fields using the Boris pusher.  
+- **Initial condition**: One particle at center with specified `v_y`.  
+- **Diagnostics**:  
+  - Record `(v_x, v_y)` trajectory over time.  
+  - Compute kinetic energy and field energy (constant `E0` contribution).  
+  - Fit simulated gyrofrequency (`omega_sim`) via `omega_fit()` and compare to theoretical `omega_c = |q| B0 / m`.  
+  - Plot `v_x` vs. `t` and `v_x`–`v_y` plane with fitted circle center.  
+
+### main_langmuir.py  
+Runs the **Langmuir (electrostatic) oscillation** benchmark by perturbing the density.  
+- **Initial condition**: Particles seeded with sinusoidal density `delta * sin(kx)`.  
+- **Solver specifics**:  
+  - Pure electrostatic: push on `E_x` only.  
+  - Periodic **Gauss correction** every `--poisson_interval` steps to enforce `∇·E = ρ/ε0`.  
+- **Diagnostics**:  
+  - Track mode amplitude `A(k)`, kinetic energy `KE`, electric energy `EE`, total energy `TE`.  
+  - Fit plasma frequency `ω_p = sqrt(n0 q^2/(m ε0))` via `omega_fit()`.  
+  - Save CSV and plot `A(k)` vs. time.  
+
+### main_two_stream_instability.py  
+Executes the **two-stream instability** in an electrostatic limit.  
+- **Initial condition**: Two counter-streaming beams with speeds ±`v0`.  
+- **Seeding**: Small sinusoidal perturbation in `E_x` at mode `--mode`.  
+- **Diagnostics**:  
+  - Compute Fourier amplitude `|E_x(k)|` over time.  
+  - Fit exponential growth rate `γ_sim` via `fit_growth_and_plot()`.  
+  - Compare to theoretical fluid result `γ_theo = k v0`.  
+
+### main_weibel_instability.py  
+Implements the **Weibel (filamentation) instability** in a magnetized 1D3V plasma.  
+- **Initial condition**: Anisotropic Maxwellian with `vth_para != vth_perp`.  
+- **Seeding**: Small sinusoidal perturbation in `B_z` at mode `--mode`.  
+- **Diagnostics**:  
+  - Track magnetic mode amplitude `|B_z(k)|`.  
+  - Fit linear growth rate `γ_sim` via `plot_weibel_growth()`.  
+  - Compare to fluid‐Weibel estimate `γ_theo = vth_perp/(√2 c) ω_p`.  
+
+---
+
 ## Usage Examples
 
 ```bash
